@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CleanSwift — Snow Removal Booking</title>
+<style>
+:root{--blue:#0078C8;--green:#00643C;--cyan:#7DDBD8;--dark:#1A2E2A;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:linear-gradient(135deg,#0078C8 0%,#00643C 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
+.card{background:#fff;border-radius:24px;padding:24px 20px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.logo{text-align:center;margin-bottom:16px;}
+.logo-text{font-size:1.8rem;font-weight:800;color:var(--dark);}
+.logo-text span{color:var(--blue);}
+.snow-badge{display:inline-block;background:linear-gradient(135deg,var(--blue),var(--green));color:#fff;padding:6px 16px;border-radius:20px;font-size:0.78rem;font-weight:700;margin-top:6px;}
+.title{font-size:1.2rem;font-weight:800;color:var(--dark);text-align:center;margin:14px 0 4px;}
+.subtitle{font-size:0.8rem;color:#888;text-align:center;margin-bottom:18px;}
+
+/* PLAN SELECTOR */
+.plan-tabs{display:flex;gap:6px;margin-bottom:14px;background:#f5f5f5;border-radius:12px;padding:4px;}
+.plan-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:9px;font-size:0.78rem;font-weight:600;color:#888;cursor:pointer;transition:all 0.2s;}
+.plan-tab.active{background:#fff;color:var(--blue);box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+
+/* PRICING GRID */
+.price-grid{display:grid;gap:8px;margin-bottom:16px;}
+.price-card{border:2px solid #e0e0e0;border-radius:14px;padding:12px 14px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:space-between;}
+.price-card:hover{border-color:var(--blue);background:#f8fbff;}
+.price-card.selected{border-color:var(--blue);background:#e3f2fd;}
+.price-card.selected .price-check{opacity:1;}
+.price-left{display:flex;align-items:center;gap:10px;}
+.price-icon{font-size:1.4rem;}
+.price-name{font-size:0.88rem;font-weight:700;color:var(--dark);}
+.price-desc{font-size:0.72rem;color:#888;margin-top:1px;}
+.price-right{text-align:right;}
+.price-amount{font-size:1.1rem;font-weight:800;color:var(--blue);}
+.price-period{font-size:0.68rem;color:#aaa;}
+.price-check{opacity:0;color:var(--green);font-size:1.1rem;transition:opacity 0.2s;}
+.price-card.selected .price-amount{color:var(--green);}
+.best-value{background:#fff3e0;border-color:#e67e22;}
+.best-value-badge{font-size:0.62rem;font-weight:700;color:#e67e22;background:#fff3e0;padding:2px 6px;border-radius:8px;margin-left:6px;}
+
+/* FORM */
+.section-title{font-size:0.78rem;font-weight:700;color:var(--dark);margin:14px 0 8px;text-transform:uppercase;letter-spacing:0.5px;}
+.fg{display:flex;flex-direction:column;gap:3px;margin-bottom:9px;}
+.fg label{font-size:0.73rem;font-weight:600;color:#555;}
+.fg input,.fg select,.fg textarea{padding:10px 12px;border:2px solid #e0e0e0;border-radius:10px;font-size:0.88rem;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--blue);}
+.fg textarea{resize:vertical;min-height:60px;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* SUMMARY BOX */
+.summary{background:#f8fbff;border:2px solid #e3f2fd;border-radius:14px;padding:14px;margin-bottom:14px;}
+.summary-title{font-size:0.8rem;font-weight:700;color:var(--blue);margin-bottom:8px;}
+.summary-row{display:flex;justify-content:space-between;font-size:0.8rem;padding:3px 0;}
+.summary-row.total{font-weight:800;font-size:0.95rem;color:var(--dark);border-top:1px solid #e0e0e0;margin-top:6px;padding-top:6px;}
+
+/* BUTTONS */
+.btn-submit{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--green));color:#fff;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.btn-submit:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,120,200,0.4);}
+.btn-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+
+/* SUCCESS */
+.success{display:none;text-align:center;padding:10px 0;}
+.success-icon{font-size:3.5rem;margin-bottom:10px;}
+.success-title{font-size:1.2rem;font-weight:800;color:var(--green);margin-bottom:8px;}
+.success-sub{font-size:0.82rem;color:#666;line-height:1.7;}
+.wa-btn{display:inline-block;margin-top:14px;padding:12px 24px;background:#25D366;color:#fff;border-radius:25px;text-decoration:none;font-weight:700;font-size:0.88rem;}
+.note{font-size:0.7rem;color:#bbb;text-align:center;margin-top:10px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-text">Clean<span>Swift</span></div>
+    <div class="snow-badge">❄️ Snow Removal Service — Edmonton</div>
+  </div>
+
+  <div id="form-section">
+    <div class="title">Book Your Snow Removal</div>
+    <div class="subtitle">Driveway & Walkway Clearing · Edmonton & Area</div>
+
+    <!-- PLAN TABS -->
+    <div class="plan-tabs">
+      <button class="plan-tab active" onclick="setPlan('visit',this)">Per Visit</button>
+      <button class="plan-tab" onclick="setPlan('monthly',this)">Monthly</button>
+      <button class="plan-tab" onclick="setPlan('season',this)">Full Season</button>
+    </div>
+
+    <!-- PER VISIT -->
+    <div id="grid-visit" class="price-grid">
+      <div class="price-card selected" onclick="selectPrice(this,'Walkway Only','$35','per visit')">
+        <div class="price-left"><div class="price-icon">🚶</div><div><div class="price-name">Walkway Only</div><div class="price-desc">Up to 20 ft · shoveling</div></div></div>
+        <div class="price-right"><div class="price-amount">$35</div><div class="price-period">per visit</div></div>
+        <div class="price-check">✓</div>
+      </div>
+      <div class="price-card" onclick="selectPrice(this,'Driveway Only (1 car)','$55','per visit')">
+        <div class="price-left"><div class="price-icon">🚗</div><div><div class="price-name">Driveway Only</div><div class="price-desc">1-car driveway</div></div></div>
+        <div class="price-right"><div class="price-amount">$55</div><div class="price-period">per visit</div></div>
+        <div class="price-check">✓</div>
+      </div>
+      <div class="price-card" onclick="selectPrice(this,'Driveway Only (2 cars)','$75','per visit')">
+        <div class="price-left"><div class="price-icon">🚗🚗</div><div><div class="price-name">Driveway Only</div><div class="price-desc">2-car driveway</div></div></div>
+        <div class="price-right"><div class="price-amount">$75</div><div class="price-period">per visit</div></div>
+        <div class="price-check">✓</div>
+      </div>
+      <div class="price-card" onclick="selectPrice(this,'Driveway + Walkway (1 car)','$75','per visit')">
+        <div class="price-left"><div class="price-icon">🏠</div><div><div class="price-name">Driveway + Walkway</div><div class="price-desc">1-car · most popular</div></div></div>
+        <div class="price-right"><div class="price-amount">$75</div><div class="price-period">per visit</div></div>
+        <div class="price-check">✓</div>
+      </div>
+      <div class="price-card best-value" onclick="selectPrice(this,'Driveway + Walkway (2 cars)','$95','per visit')">
+        <div class="price-left"><div class="price-icon">🏡</div><div><div class="price-name">Driveway + Walkway <span class="best-value-badge">POPULAR</span></div><div class="price-desc">2-car driveway</div></div></div>
+        <div class="price-right"><div class="price-amount">$95</div><div class="price-period">per visit</div></div>
+        <div class="price-check">✓</div>
+      </div>
+      <div class="price-card" onclick="selectPrice(this,'Large Property','$120','per visit')">
+        <div class="price-left"><div class="price-icon">🏘️</div><div><div class="price-name">Large Property</div><div class="price-desc">3+ cars or extra-long driveway</div></div></div>
+        <div class="price-right"><div class="price-amount">$120</div><div class="price-period">per visit</div></div>
+        <div class="price-check">✓</div>
+      </div>
+    </div>
+
+    <!-- MONTHLY -->
+    <div id="grid-monthly" class="price-grid" style="display:none;">
+      <div class="price-card selected" onclick="selectPrice(this,'Monthly — Walkway Only','$149','per month (unlimited visits)')">
+        <div class="price-left"><div class="price-icon">🚶</div><div><div class="price-name">Walkway Only</div><div class="price-desc">Unlimited visits · Nov–Mar</div></div></div>
+        <div class="price-right"><div class="price-amount">$149</div><div class="price-period">per month</div></div>
+        <div class="price-check">✓</div>
+      </div>
+      <div class="price-card best-value" onclick="selectPrice(this,'Monthly — Driveway + Walkway Standard','$199','per month (unlimited visits)')">
+        <div class="price-left"><div class="price-icon">🏠</div><div><div class="price-name">Driveway + Walkway <span class="best-value-badge">BEST VALUE</span></div><div class="price-desc">Standard lot · unlimited visits</div></div></div>
+        <div class="price-right"><div class="price-amount">$199</div><div class="price-period">per month</div></div>
+        <div class="price-check">✓</div>
+      </div>
+      <div class="price-card" onclick="selectPrice(this,'Monthly — Large Property','$249','per month (unlimited visits)')">
+        <div class="price-left"><div class="price-icon">🏡</div><div><div class="price-name">Large Property</div><div class="price-desc">2+ cars · extra-long driveway</div></div></div>
+        <div class="price-right"><div class="price-amount">$249</div><div class="price-period">per month</div></div>
+        <div class="price-check">✓</div>
+      </div>
+      <div style="background:#e8f5e9;border-radius:10px;padding:10px 12px;font-size:0.75rem;color:#555;">
+        ✅ <b>Monthly plan includes:</b> Unlimited visits after every snowfall · Photo sent after each visit · Priority service · Cancel anytime
+      </div>
+    </div>
+
+    <!-- SEASON -->
+    <div id="grid-season" class="price-grid" style="display:none;">
+      <div class="price-card selected" onclick="selectPrice(this,'Full Season — Driveway + Walkway Standard','$599','full season (Nov–Mar)')">
+        <div class="price-left"><div class="price-icon">🏠</div><div><div class="price-name">Standard Property</div><div class="price-desc">Driveway + walkway · Nov–Mar</div></div></div>
+        <div class="price-right"><div class="price-amount">$599</div><div class="price-period">full season</div></div>
+        <div class="price-check">✓</div>
+      </div>
+      <div class="price-card best-value" onclick="selectPrice(this,'Full Season — Large Property','$799','full season (Nov–Mar)')">
+        <div class="price-left"><div class="price-icon">🏡</div><div><div class="price-name">Large Property <span class="best-value-badge">SAVE $400</span></div><div class="price-desc">2-car driveway + walkways</div></div></div>
+        <div class="price-right"><div class="price-amount">$799</div><div class="price-period">full season</div></div>
+        <div class="price-check">✓</div>
+      </div>
+      <div style="background:#e8f5e9;border-radius:10px;padding:10px 12px;font-size:0.75rem;color:#555;">
+        ✅ <b>Season plan includes:</b> Unlimited visits Nov–Mar · Biggest savings · Photo after each visit · Priority routing · One payment for the whole winter
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="summary" id="booking-summary">
+      <div class="summary-title">📋 Your Selection</div>
+      <div class="summary-row"><span>Service</span><span id="sum-service">Walkway Only</span></div>
+      <div class="summary-row"><span>Plan</span><span id="sum-plan">Per Visit</span></div>
+      <div class="summary-row total"><span>Price</span><span id="sum-price">$35 per visit</span></div>
+    </div>
+
+    <!-- CONTACT FORM -->
+    <div class="section-title">Your Information</div>
+    <div class="fr">
+      <div class="fg"><label>Full Name *</label><input id="f-name" placeholder="John Smith"></div>
+      <div class="fg"><label>Phone *</label><input id="f-phone" type="tel" placeholder="+1 780..."></div>
+    </div>
+    <div class="fg"><label>Email</label><input id="f-email" type="email" placeholder="john@email.com"></div>
+    <div class="fg"><label>Service Address *</label><input id="f-addr" placeholder="123 Main St, Edmonton, AB"></div>
+    <div class="fr">
+      <div class="fg"><label>Preferred Start Date</label><input id="f-date" type="date"></div>
+      <div class="fg"><label>Property Size</label><select id="f-size">
+        <option>Standard lot</option>
+        <option>Corner lot</option>
+        <option>Large lot (2+ cars)</option>
+        <option>Extra-large</option>
+      </select></div>
+    </div>
+    <div class="fg"><label>Special Instructions</label><textarea id="f-notes" placeholder="Gate code, icy spots, specific areas to clear, dog in yard..."></textarea></div>
+
+    <button class="btn-submit" id="submit-btn" onclick="submitBooking()">❄️ Confirm My Booking</button>
+    <div class="note">We confirm within 2 hours · WhatsApp or phone · No payment required now</div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success" id="success-section">
+    <div class="success-icon">✅</div>
+    <div style="font-size:1.3rem;font-weight:800;color:var(--green);margin-bottom:8px;">Booking Received!</div>
+    <div style="font-size:0.82rem;color:#666;line-height:1.7;">
+      Thank you! We'll contact you within 2 hours to confirm.<br><br>
+      <div id="success-detail" style="background:#f5f5f5;border-radius:10px;padding:10px;text-align:left;font-size:0.8rem;"></div>
+    </div>
+    <a class="wa-btn" id="wa-btn" href="#" target="_blank">💬 Message us on WhatsApp</a>
+    <div class="note" style="margin-top:10px;">CleanSwift Edmonton · cleanswifts.com · +1 368 885 5157</div>
+  </div>
+</div>
+
+<script>
+const SHEETS_URL='https://script.google.com/macros/s/AKfycbzWdyU5WQq8oY1UA1wmw0TF4gUpvjRwPQ9Smm8EsoOUpOjff7EGPXwC8BK4OPFMqmaH/exec';
+const WA='13688855157';
+let selService='Walkway Only';
+let selPrice='$35';
+let selPeriod='per visit';
+let selPlan='Per Visit';
+
+function setPlan(plan,btn){
+  document.querySelectorAll('.plan-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  ['visit','monthly','season'].forEach(p=>document.getElementById('grid-'+p).style.display='none');
+  document.getElementById('grid-'+plan).style.display='grid';
+  selPlan={visit:'Per Visit',monthly:'Monthly (Unlimited)',season:'Full Season (Nov-Mar)'}[plan];
+  // Auto-select first card
+  const first=document.querySelector('#grid-'+plan+' .price-card');
+  if(first) first.click();
+}
+
+function selectPrice(el,service,price,period){
+  const grid=el.closest('.price-grid');
+  grid.querySelectorAll('.price-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selService=service;selPrice=price;selPeriod=period;
+  document.getElementById('sum-service').textContent=service.replace(' (unlimited visits)','').replace(' (full season (Nov–Mar))','');
+  document.getElementById('sum-plan').textContent=selPlan;
+  document.getElementById('sum-price').textContent=price+' '+period;
+}
+
+async function submitBooking(){
+  const name=document.getElementById('f-name').value.trim();
+  const phone=document.getElementById('f-phone').value.trim();
+  const addr=document.getElementById('f-addr').value.trim();
+  if(!name||!phone||!addr){alert('Please fill Name, Phone and Address');return;}
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;btn.textContent='Sending...';
+
+  const payload={
+    type:'snow_booking',
+    timestamp:new Date().toISOString(),
+    client:name,phone,
+    email:document.getElementById('f-email').value.trim(),
+    address:addr,
+    service:'Snow Removal — '+selService,
+    plan:selPlan,
+    estimatedPrice:selPrice+' '+selPeriod,
+    size:document.getElementById('f-size').value,
+    date:document.getElementById('f-date').value,
+    notes:document.getElementById('f-notes').value.trim(),
+    source:'Flyer QR Code — Snow Service'
+  };
+
+  try{await fetch(SHEETS_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});}
+  catch(e){console.log(e);}
+
+  document.getElementById('form-section').style.display='none';
+  document.getElementById('success-section').style.display='block';
+  document.getElementById('success-detail').innerHTML=`
+    <b>Name:</b> ${name}<br>
+    <b>Phone:</b> ${phone}<br>
+    <b>Address:</b> ${addr}<br>
+    <b>Service:</b> ${selService}<br>
+    <b>Plan:</b> ${selPlan}<br>
+    <b>Price:</b> ${selPrice} ${selPeriod}
+  `;
+  const msg=`Hi CleanSwift! I just booked snow removal via your flyer ❄️\n\nName: ${name}\nPhone: ${phone}\nAddress: ${addr}\nService: ${selService}\nPlan: ${selPlan}\nPrice: ${selPrice} ${selPeriod}\n${payload.date?'Start: '+payload.date:''}\n${payload.notes?'Notes: '+payload.notes:''}`;
+  document.getElementById('wa-btn').href='https://wa.me/'+WA+'?text='+encodeURIComponent(msg);
+}
+</script>
+</body>
+</html>
